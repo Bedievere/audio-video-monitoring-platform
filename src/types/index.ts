@@ -179,6 +179,23 @@ declare global {
         stop: (sourceId: string) => Promise<void>
         getStatus: (sourceId: string) => Promise<any>
       }
+      anomaly: {
+        start: () => Promise<void>
+        stop: () => Promise<void>
+        registerSource: (params: { sourceId: string; sourceName: string }) => Promise<void>
+        unregisterSource: (params: { sourceId: string }) => Promise<void>
+        processFrame: (params: { sourceId: string; frame: any }) => Promise<void>
+        processBitrate: (params: { sourceId: string; bitrate: number }) => Promise<void>
+        getConfig: () => Promise<any>
+        updateConfig: (config: any) => Promise<any>
+        getStatistics: (sourceId?: string) => Promise<any>
+        getActiveAnomalies: () => Promise<any[]>
+        detectAll: () => Promise<any>
+      }
+      ipc: {
+        on: (channel: string, callback: (...args: any[]) => void) => void
+        removeListener: (channel: string, callback: (...args: any[]) => void) => void
+      }
       stream: {
         onFrame: (callback: (data: { sourceId: string; frame: StreamFrame }) => void) => () => void
         onInfo: (callback: (data: { sourceId: string; info: StreamInfo }) => void) => () => void

@@ -2,10 +2,14 @@ import { ipcMain, BrowserWindow } from 'electron'
 import { audioSourceRepository, anomalyRepository } from '../database/repositories'
 import { configManager } from './config.service'
 import { StreamManager } from '../streaming'
+import { registerAnomalyDetectionHandlers } from '../ipc/anomaly-detection.handler'
 
 let streamManagerInstance: StreamManager | null = null
 
 export function registerIpcHandlers(): void {
+  // 注册异常检测处理器
+  registerAnomalyDetectionHandlers()
+
   streamManagerInstance = new StreamManager({
     onFrame: (sourceId, frame) => {
       const windows = BrowserWindow.getAllWindows()
