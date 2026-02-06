@@ -64,9 +64,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // 录制管理
   recordings: {
-    getByAnomaly: (anomalyId: string) => ipcRenderer.invoke('recordings:getByAnomaly', anomalyId),
-    download: (recordingId: string) => ipcRenderer.invoke('recordings:download', recordingId),
-    cleanup: () => ipcRenderer.invoke('recordings:cleanup')
+    getConfig: () => ipcRenderer.invoke('recording:get-config'),
+    updateConfig: (config: any) => ipcRenderer.invoke('recording:update-config', config),
+    getAll: () => ipcRenderer.invoke('recording:get-all'),
+    getByAnomaly: (anomalyId: string) => ipcRenderer.invoke('recording:get-by-anomaly', anomalyId),
+    getBySource: (sourceId: string) => ipcRenderer.invoke('recording:get-by-source', sourceId),
+    getStats: () => ipcRenderer.invoke('recording:get-stats'),
+    delete: (recordingId: string) => ipcRenderer.invoke('recording:delete', recordingId),
+    cleanup: () => ipcRenderer.invoke('recording:cleanup')
   },
 
   // 告警服务

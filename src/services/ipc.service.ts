@@ -4,6 +4,7 @@ import { configManager } from './config.service'
 import { StreamManager } from '../streaming'
 import { registerAnomalyDetectionHandlers } from '../ipc/anomaly-detection.handler'
 import { registerNotificationHandlers, initNotificationService } from '../ipc/notification.handler'
+import { registerRecordingHandlers, initRecordingService } from '../ipc/recording.handler'
 
 let streamManagerInstance: StreamManager | null = null
 
@@ -14,6 +15,10 @@ export function registerIpcHandlers(): void {
   registerNotificationHandlers()
   // 初始化告警通知服务
   initNotificationService()
+  // 注册录制处理器
+  registerRecordingHandlers()
+  // 初始化录制服务
+  initRecordingService()
 
   streamManagerInstance = new StreamManager({
     onFrame: (sourceId, frame) => {

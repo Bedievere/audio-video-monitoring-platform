@@ -174,8 +174,13 @@ declare global {
         load: () => Promise<void>
       }
       recordings: {
-        getByAnomaly: (anomalyId: string) => Promise<RecordingFile[]>
-        download: (recordingId: string) => Promise<Buffer>
+        getConfig: () => Promise<any>
+        updateConfig: (config: any) => Promise<any>
+        getAll: () => Promise<any[]>
+        getByAnomaly: (anomalyId: string) => Promise<any[]>
+        getBySource: (sourceId: string) => Promise<any[]>
+        getStats: () => Promise<any>
+        delete: (recordingId: string) => Promise<void>
         cleanup: () => Promise<void>
       }
       alerts: {

@@ -2,6 +2,12 @@ import { ipcMain } from 'electron'
 import { AnomalyDetector } from '../detection/anomaly.detector'
 import { AnomalyDetectionConfig, AnomalyEvent } from '../types/detection.types'
 import { getNotificationService } from './notification.handler'
+import {
+  getRecordingService,
+  registerSourceForRecording,
+  unregisterSourceForRecording,
+  processFrameForRecording
+} from './recording.handler'
 
 let detector: AnomalyDetector | null = null
 
@@ -28,6 +34,7 @@ export function registerAnomalyDetectionHandlers(): void {
     if (detector) {
       detector.registerSource(sourceId)
     }
+    registerSourceForRecording(sourceId)
     return { success: true }
   })
 
@@ -35,6 +42,7 @@ export function registerAnomalyDetectionHandlers(): void {
     if (detector) {
       detector.unregisterSource(sourceId)
     }
+    unregisterSourceForRecording(sourceId)
     return { success: true }
   })
 
@@ -42,6 +50,7 @@ export function registerAnomalyDetectionHandlers(): void {
     if (detector) {
       detector.processFrame(sourceId, frame)
     }
+    processFrameForRecording(sourceId, { data: frame.data, timestamp: Date.now() })
     return { success: true }
   })
 
@@ -93,10 +102,14 @@ export function registerAnomalyDetectionHandlers(): void {
 function setupDetectorEvents(): void {
   if (!detector) return
 
-  detector.on('anomaly-detected', (anomaly: AnomalyEvent) => {
+  detector.on('anomaly-detected', async (anomaly: AnomalyEvent) => {
     const notificationService = getNotificationService()
     if (notificationService) {
       notificationService.queueAnomalyAlert(anomaly)
+    }
+    const recordingService = getRecordingService()
+    if (recordingService) {
+      await recordingService.startRecording(anomaly)
     }
     if (detector) {
       const mainWindow = require('electron').BrowserWindow.getAllWindows()[0]
@@ -107,6 +120,10 @@ function setupDetectorEvents(): void {
   })
 
   detector.on('anomaly-resolved', (anomaly: AnomalyEvent) => {
+    const recordingService = getRecordingService()
+    if (recordingService) {
+      recordingService.stopRecording(anomaly.sourceId, 'anomaly_resolved')
+    }
     const mainWindow = require('electron').BrowserWindow.getAllWindows()[0]
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('anomaly:resolved', anomaly)
