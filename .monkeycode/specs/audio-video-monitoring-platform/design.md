@@ -14,41 +14,41 @@ Updated: 2026-02-06
 ```mermaid
 graph TB
     subgraph "数据层"
-        A1[音视频源<br/>RTSP/RTMP/SRT/HTTP]
-        A2[配置文件<br/>config.json]
-        A3[SQLite数据库<br/>monitoring.db]
-        A4[日志文件<br/>logs/]
-        A5[录制文件存储<br/>recordings/]
+        A1["音视频源<br/>RTSP/RTMP/SRT/HTTP"]
+        A2["配置文件<br/>config.json"]
+        A3["SQLite数据库<br/>monitoring.db"]
+        A4["日志文件<br/>logs/"]
+        A5["录制文件存储<br/>recordings/"]
     end
 
     subgraph "处理层"
-        B1[音视频源管理器]
-        B2[网络流解析器<br/>RTSP/RTMP/SRT]
-        B3[HTTP流解析器<br/>MP4/HLS/DASH]
-        B4[音视频解码器]
-        B5[异常检测引擎]
-        B6[告警通知服务]
-        B7[录制服务]
-        B8[录制音视频序列化器]
+        B1["音视频源管理器"]
+        B2["网络流解析器<br/>RTSP/RTMP/SRT"]
+        B3["HTTP流解析器<br/>MP4/HLS/DASH"]
+        B4["音视频解码器"]
+        B5["异常检测引擎"]
+        B6["告警通知服务"]
+        B7["录制服务"]
+        B8["录制音视频序列化器"]
     end
 
     subgraph "应用层"
-        C1[音视频源服务]
-        C2[实时监控服务]
-        C3[异常检测服务]
-        C4[告警服务]
-        C5[配置服务]
-        C6[历史记录服务]
-        C7[录制管理服务]
+        C1["音视频源服务"]
+        C2["实时监控服务"]
+        C3["异常检测服务"]
+        C4["告警服务"]
+        C5["配置服务"]
+        C6["历史记录服务"]
+        C7["录制管理服务"]
     end
 
     subgraph "展示层"
-        D1[主监控界面<br/>多画面展示]
-        D2[音视频源管理界面]
-        D3[配置界面]
-        D4[历史记录界面]
-        D5[告警通知弹窗]
-        D6[录制回放界面]
+        D1["主监控界面<br/>多画面展示"]
+        D2["音视频源管理界面"]
+        D3["配置界面"]
+        D4["历史记录界面"]
+        D5["告警通知弹窗"]
+        D6["录制回放界面"]
     end
 
     A1 --> B2
