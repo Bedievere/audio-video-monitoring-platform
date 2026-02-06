@@ -6,7 +6,11 @@ import {
   SettingOutlined,
   HistoryOutlined
 } from '@ant-design/icons'
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
+import { Spin } from 'antd'
+
+const MonitoringPage = lazy(() => import('../monitoring/MonitoringPage'))
+const AudioSourcesPage = lazy(() => import('../monitoring/AudioSourcesPage'))
 
 const { Header, Content, Sider } = Layout
 
@@ -20,6 +24,12 @@ export default function MainLayout() {
     { key: 'history', icon: <HistoryOutlined />, label: '历史记录' },
     { key: 'settings', icon: <SettingOutlined />, label: '系统设置' }
   ]
+
+  const loadingFallback = (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+      <Spin size="large" />
+    </div>
+  )
 
   return (
     <Layout style={{ height: '100%' }}>
@@ -39,38 +49,10 @@ export default function MainLayout() {
           />
         </Sider>
         <Content style={{ padding: '24px', overflow: 'auto' }}>
-          <div style={{ padding: '24px', background: '#fff', minHeight: '100%' }}>
-            {selectedKey === 'monitoring' && (
-              <div>
-                <h2>实时监控</h2>
-                <p>选择左侧音视频源开始监控</p>
-              </div>
-            )}
-            {selectedKey === 'sources' && (
-              <div>
-                <h2>音视频源管理</h2>
-                <p>管理RTSP、RTMP、SRT、HTTP等音视频源</p>
-              </div>
-            )}
-            {selectedKey === 'alerts' && (
-              <div>
-                <h2>告警管理</h2>
-                <p>查看和管理告警通知</p>
-              </div>
-            )}
-            {selectedKey === 'history' && (
-              <div>
-                <h2>历史记录</h2>
-                <p>查看异常历史记录</p>
-              </div>
-            )}
-            {selectedKey === 'settings' && (
-              <div>
-                <h2>系统设置</h2>
-                <p>配置系统参数</p>
-              </div>
-            )}
-          </div>
+          <Suspense fallback={loadingFallback}>
+            {selectedKey === 'monitoring' && <MonitoringPage />}
+            {selectedKey === 'sources' && <AudioSourcesPage />}
+          </Suspense>
         </Content>
       </Layout>
     </Layout>
