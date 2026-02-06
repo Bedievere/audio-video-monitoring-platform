@@ -11,6 +11,7 @@ import { Spin } from 'antd'
 
 const MonitoringPage = lazy(() => import('../monitoring/MonitoringPage'))
 const AudioSourcesPage = lazy(() => import('../monitoring/AudioSourcesPage'))
+const AlertsPage = lazy(() => import('../alerts/AlertsPage'))
 
 const { Header, Content, Sider } = Layout
 
@@ -52,6 +53,7 @@ export default function MainLayout() {
           <Suspense fallback={loadingFallback}>
             {selectedKey === 'monitoring' && <MonitoringPage />}
             {selectedKey === 'sources' && <AudioSourcesPage />}
+            {selectedKey === 'alerts' && <AlertsPage />}
           </Suspense>
         </Content>
       </Layout>

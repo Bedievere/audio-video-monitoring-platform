@@ -160,6 +160,13 @@ declare global {
         update: (id: string, updates: Partial<AnomalyEvent>) => Promise<void>
         exportToCSV: (anomalies: AnomalyEvent[]) => Promise<string>
       }
+      notifications: {
+        getConfig: () => Promise<any>
+        updateConfig: (config: any) => Promise<any>
+        sendTest: () => Promise<void>
+        clearHistory: () => Promise<void>
+        getQueueStatus: () => Promise<any>
+      }
       config: {
         get: () => Promise<SystemConfig>
         update: (config: Partial<SystemConfig>) => Promise<void>
