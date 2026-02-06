@@ -18,12 +18,6 @@ export interface DecoderEvents {
   'end': () => void
 }
 
-export declare interface Decoder {
-  on<K extends keyof DecoderEvents>(event: K, listener: DecoderEvents[K]): this
-  once<K extends keyof DecoderEvents>(event: K, listener: DecoderEvents[K]): this
-  emit<K extends keyof DecoderEvents>(event: K, ...args: Parameters<DecoderEvents[K]>): boolean
-}
-
 export abstract class Decoder extends EventEmitter {
   protected width: number
   protected height: number

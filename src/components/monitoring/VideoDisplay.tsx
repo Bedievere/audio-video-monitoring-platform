@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
 interface VideoDisplayProps {
   sourceId: string
@@ -26,6 +26,35 @@ export default function VideoDisplay({
   const [frameRate, setFrameRate] = useState(0)
   const [bitrate, setBitrate] = useState(0)
 
+  const updateFrameStats = useCallback((frame: { data?: { length: number } }) => {
+    const now = Date.now()
+    const lastFrameTime = (videoRef.current as any)?._lastFrameTime || now
+    const delta = now - lastFrameTime
+
+    if (delta > 0) {
+      const newFrameRate = Math.round(1000 / delta)
+      setFrameRate(prev => prev * 0.9 + newFrameRate * 0.1)
+    }
+
+    if (frame.data) {
+      const frameSize = frame.data.length
+      const newBitrate = Math.round(frameSize * 8 * 1000 / delta / 1024)
+      setBitrate(prev => prev * 0.9 + newBitrate * 0.1)
+    }
+
+    (videoRef.current as any)._lastFrameTime = now
+  }, [])
+
+  const startMonitoring = useCallback(async () => {
+    try {
+      if (window.electronAPI?.monitoring) {
+        await window.electronAPI.monitoring.start(sourceId)
+      }
+    } catch (error) {
+      setVideoStatus('error')
+    }
+  }, [sourceId])
+
   useEffect(() => {
     if (isActive && !isConnected) {
       setVideoStatus('loading')
@@ -50,9 +79,9 @@ export default function VideoDisplay({
         }
       })
 
-      const unregisterInfo = window.electronAPI.stream.onInfo(({ sourceId: id, info }) => {
+      const unregisterInfo = window.electronAPI.stream.onInfo(({ sourceId: id }) => {
         if (id === sourceId) {
-          console.log('Stream info:', info)
+          // Stream info received
         }
       })
 
@@ -91,45 +120,13 @@ export default function VideoDisplay({
         unregisterDisconnected()
       }
     }
-  }, [sourceId, onStatusChange])
+  }, [sourceId, onStatusChange, updateFrameStats])
 
   useEffect(() => {
     if (isActive && videoRef.current && streamUrl) {
       startMonitoring()
     }
-  }, [isActive, streamUrl])
-
-  const startMonitoring = async () => {
-    try {
-      if (window.electronAPI?.monitoring) {
-        await window.electronAPI.monitoring.start(sourceId)
-      }
-    } catch (error) {
-      console.error('Failed to start monitoring:', error)
-      setVideoStatus('error')
-    }
-  }
-
-  const updateFrameStats = (frame: any) => {
-    const now = Date.now()
-    const lastFrameTime = (videoRef.current as any)._lastFrameTime || now
-    const delta = now - lastFrameTime
-
-    if (delta > 0) {
-      const newFrameRate = Math.round(1000 / delta)
-      const avgFrameRate = frameRate * 0.9 + newFrameRate * 0.1
-      setFrameRate(avgFrameRate)
-    }
-
-    if (frame.data) {
-      const frameSize = frame.data.length
-      const newBitrate = Math.round(frameSize * 8 * 1000 / delta / 1024)
-      const avgBitrate = bitrate * 0.9 + newBitrate * 0.1
-      setBitrate(avgBitrate)
-    }
-
-    ;(videoRef.current as any)._lastFrameTime = now
-  }
+  }, [isActive, streamUrl, startMonitoring])
 
   const getVideoElement = () => {
     if (videoStatus === 'connected') {

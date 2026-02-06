@@ -17,10 +17,8 @@ export interface StreamParserEvents {
   'end': () => void
 }
 
-export declare interface StreamParser {
-  on<K extends keyof StreamParserEvents>(event: K, listener: StreamParserEvents[K]): this
-  once<K extends keyof StreamParserEvents>(event: K, listener: StreamParserEvents[K]): this
-  emit<K extends keyof StreamParserEvents>(event: K, ...args: Parameters<StreamParserEvents[K]>): boolean
+export type StreamParserEventsMap = {
+  [K in keyof StreamParserEvents]: StreamParserEvents[K][]
 }
 
 export abstract class StreamParser extends EventEmitter {

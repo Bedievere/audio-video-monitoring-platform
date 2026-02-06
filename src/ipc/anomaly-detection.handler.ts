@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron'
+import { ipcMain, BrowserWindow } from 'electron'
 import { AnomalyDetector } from '../detection/anomaly.detector'
 import { AnomalyDetectionConfig, AnomalyEvent } from '../types/detection.types'
 import { getNotificationService } from './notification.handler'
@@ -112,7 +112,7 @@ function setupDetectorEvents(): void {
       await recordingService.startRecording(anomaly)
     }
     if (detector) {
-      const mainWindow = require('electron').BrowserWindow.getAllWindows()[0]
+      const mainWindow = BrowserWindow.getAllWindows()[0]
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('anomaly:detected', anomaly)
       }
@@ -124,21 +124,21 @@ function setupDetectorEvents(): void {
     if (recordingService) {
       recordingService.stopRecording(anomaly.sourceId, 'anomaly_resolved')
     }
-    const mainWindow = require('electron').BrowserWindow.getAllWindows()[0]
+    const mainWindow = BrowserWindow.getAllWindows()[0]
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('anomaly:resolved', anomaly)
     }
   })
 
   detector.on('source-anomaly', ({ sourceId, result }) => {
-    const mainWindow = require('electron').BrowserWindow.getAllWindows()[0]
+    const mainWindow = BrowserWindow.getAllWindows()[0]
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('source:anomaly', { sourceId, result })
     }
   })
 
   detector.on('config-updated', (config: AnomalyDetectionConfig) => {
-    const mainWindow = require('electron').BrowserWindow.getAllWindows()[0]
+    const mainWindow = BrowserWindow.getAllWindows()[0]
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('anomaly:config-updated', config)
     }

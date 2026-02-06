@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 import VideoDisplay from './VideoDisplay'
 import { useSourceMonitor } from '../../hooks/useSourceMonitor'
 import { AudioSource } from '../../types'
@@ -11,22 +11,30 @@ interface MonitoringGridProps {
 export default function MonitoringGrid({ sources, layout = 'grid' }: MonitoringGridProps) {
   const { getMonitorStatus, startMonitoring, stopMonitoring } = useSourceMonitor()
 
+  const startMonitoringForSource = useCallback((sourceId: string) => {
+    startMonitoring(sourceId)
+  }, [startMonitoring])
+
+  const stopMonitoringForSource = useCallback((sourceId: string) => {
+    stopMonitoring(sourceId)
+  }, [stopMonitoring])
+
   useEffect(() => {
     const activeSources = sources.filter(s => s.status === 'connected')
 
     activeSources.forEach(source => {
       const status = getMonitorStatus(source.id)
       if (!status?.active) {
-        startMonitoring(source.id)
+        startMonitoringForSource(source.id)
       }
     })
 
     return () => {
       activeSources.forEach(source => {
-        stopMonitoring(source.id)
+        stopMonitoringForSource(source.id)
       })
     }
-  }, [sources])
+  }, [sources, getMonitorStatus, startMonitoringForSource, stopMonitoringForSource])
 
   const gridStyles: React.CSSProperties = layout === 'grid' ? {
     display: 'grid',

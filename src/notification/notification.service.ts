@@ -1,5 +1,7 @@
 import { Notification } from 'electron'
 import { AnomalyEvent } from '../types/detection.types'
+import nodemailer from 'nodemailer'
+import fetch from 'node-fetch'
 
 export interface NotificationConfig {
   enabled: boolean
@@ -148,8 +150,6 @@ export class NotificationService {
 
   private async sendEmailAlert(anomaly: AnomalyEvent): Promise<void> {
     try {
-      const nodemailer = require('nodemailer')
-
       const transporter = nodemailer.createTransport({
         host: this.config.email.smtpHost,
         port: this.config.email.smtpPort,
@@ -178,8 +178,6 @@ export class NotificationService {
     if (!this.config.instantMessage.webhookUrl) return
 
     try {
-      const fetch = require('node-fetch')
-
       const message = this.formatAlertMessage(anomaly)
 
       const payload = {
