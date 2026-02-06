@@ -3,12 +3,17 @@ import { audioSourceRepository, anomalyRepository } from '../database/repositori
 import { configManager } from './config.service'
 import { StreamManager } from '../streaming'
 import { registerAnomalyDetectionHandlers } from '../ipc/anomaly-detection.handler'
+import { registerNotificationHandlers, initNotificationService } from '../ipc/notification.handler'
 
 let streamManagerInstance: StreamManager | null = null
 
 export function registerIpcHandlers(): void {
   // 注册异常检测处理器
   registerAnomalyDetectionHandlers()
+  // 注册告警通知处理器
+  registerNotificationHandlers()
+  // 初始化告警通知服务
+  initNotificationService()
 
   streamManagerInstance = new StreamManager({
     onFrame: (sourceId, frame) => {

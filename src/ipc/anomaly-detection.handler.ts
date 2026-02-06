@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import { AnomalyDetector } from '../detection/anomaly.detector'
 import { AnomalyDetectionConfig, AnomalyEvent } from '../types/detection.types'
+import { getNotificationService } from './notification.handler'
 
 let detector: AnomalyDetector | null = null
 
@@ -93,6 +94,10 @@ function setupDetectorEvents(): void {
   if (!detector) return
 
   detector.on('anomaly-detected', (anomaly: AnomalyEvent) => {
+    const notificationService = getNotificationService()
+    if (notificationService) {
+      notificationService.queueAnomalyAlert(anomaly)
+    }
     if (detector) {
       const mainWindow = require('electron').BrowserWindow.getAllWindows()[0]
       if (mainWindow && !mainWindow.isDestroyed()) {
