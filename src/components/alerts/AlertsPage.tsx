@@ -13,15 +13,18 @@ import {
   Alert
 } from 'antd'
 import { useNotificationConfig } from '../../hooks/useNotificationConfig'
+import { useRecordingConfig } from '../../hooks/useRecordingConfig'
 
 export default function AlertsPage() {
-  const { config, loading, updateConfig, sendTestAlert } = useNotificationConfig()
+  const { config, loading, updateConfig: updateNotificationConfig, sendTestAlert } = useNotificationConfig()
+  const { config: recordingConfig, updateConfig: updateRecordingConfig } = useRecordingConfig()
   const [form] = Form.useForm()
 
   const handleSave = async () => {
     try {
       const values = await form.validateFields()
-      await updateConfig(values)
+      await updateNotificationConfig(values)
+      await updateRecordingConfig(values)
     } catch (error) {
       message.error('请检查表单填写是否正确')
     }
@@ -32,7 +35,10 @@ export default function AlertsPage() {
   }
 
   const handleTabChange = () => {
-    form.setFieldsValue(config)
+    form.setFieldsValue({
+      ...config,
+      ...recordingConfig
+    })
   }
 
   return (
@@ -45,7 +51,7 @@ export default function AlertsPage() {
           marginBottom: '24px'
         }}
       >
-        <h1 style={{ margin: 0 }}>告警通知设置</h1>
+        <h1 style={{ margin: 0 }}>告警与录制设置</h1>
         <Space>
           <Button onClick={handleSendTest}>发送测试告警</Button>
           <Button type="primary" onClick={handleSave} loading={loading}>
@@ -263,6 +269,101 @@ export default function AlertsPage() {
                       </div>
                     }
                     type="warning"
+                    showIcon
+                  />
+                </Card>
+              )
+            },
+            {
+              key: 'recording',
+              label: '异常录制',
+              children: (
+                <Card>
+                  <Form.Item
+                    name="enabled"
+                    label="启用异常录制"
+                    valuePropName="checked"
+                  >
+                    <Switch />
+                  </Form.Item>
+
+                  <Form.Item
+                    name="preRecordDuration"
+                    label="预录制时长（毫秒）"
+                    rules={[{ required: true, message: '请输入预录制时长' }]}
+                    extra="在异常发生前录制的时间长度，用于获取异常发生前的情况"
+                  >
+                    <InputNumber
+                      min={1000}
+                      max={30000}
+                      step={1000}
+                      style={{ width: '300px' }}
+                      addonAfter="ms"
+                    />
+                  </Form.Item>
+                  <p style={{ color: '#999', marginBottom: '16px' }}>
+                    建议值：5000（5秒）- 在异常发生前录制5秒画面
+                  </p>
+
+                  <Form.Item
+                    name="postRecordDuration"
+                    label="后录制时长（毫秒）"
+                    rules={[{ required: true, message: '请输入后录制时长' }]}
+                    extra="在异常发生后录制的时间长度"
+                  >
+                    <InputNumber
+                      min={5000}
+                      max={60000}
+                      step={1000}
+                      style={{ width: '300px' }}
+                      addonAfter="ms"
+                    />
+                  </Form.Item>
+                  <p style={{ color: '#999', marginBottom: '16px' }}>
+                    建议值：10000（10秒）- 在异常发生后录制10秒画面
+                  </p>
+
+                  <Form.Item
+                    name="storagePath"
+                    label="录制文件存储路径"
+                    extra="留空使用默认路径"
+                  >
+                    <Input placeholder="留空使用默认路径" />
+                  </Form.Item>
+
+                  <Form.Item
+                    name="maxRetentionDays"
+                    label="录制文件保留天数"
+                    rules={[{ required: true, message: '请输入保留天数' }]}
+                    extra="超过此天数的录制文件将被自动删除"
+                  >
+                    <InputNumber
+                      min={1}
+                      max={365}
+                      style={{ width: '200px' }}
+                      addonAfter="天"
+                    />
+                  </Form.Item>
+                  <p style={{ color: '#999' }}>
+                    建议值：30天 - 自动删除30天前的录制文件
+                  </p>
+
+                  <Divider />
+
+                  <Alert
+                    message="录制功能说明"
+                    description={
+                      <div>
+                        <p>异常录制功能会在检测到异常时自动开始录制：</p>
+                        <ul>
+                          <li><strong>预录制：</strong>在异常发生前开始录制，用于获取异常发生前的情况</li>
+                          <li><strong>后录制：</strong>在异常发生后继续录制一段时间，用于记录异常的发展过程</li>
+                          <li><strong>自动清理：</strong>系统会定期清理超过保留天数的录制文件</li>
+                          <li><strong>文件命名：</strong>录制文件按时间戳和异常类型自动命名</li>
+                        </ul>
+                      </div>
+                    }
+                    type="info"
                     showIcon
                   />
                 </Card>

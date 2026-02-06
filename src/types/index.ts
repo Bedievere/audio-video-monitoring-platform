@@ -51,26 +51,31 @@ export interface AudioFrame {
 }
 
 export type AnomalyType =
-  | 'black_screen'
-  | 'snow_screen'
-  | 'static_screen'
-  | 'audio_loss'
-  | 'low_volume'
-  | 'high_volume'
-  | 'signal_loss'
+  | 'stream_interrupted'
+  | 'frame_loss'
+  | 'audio_missing'
+  | 'video_black'
+  | 'video_freeze'
+  | 'low_frame_rate'
+  | 'high_bitrate'
+  | 'low_bitrate'
+  | 'connection_failed'
+  | 'timeout'
+
+export type AnomalySeverity = 'low' | 'medium' | 'high' | 'critical'
 
 export interface AnomalyEvent {
   id: string
   type: AnomalyType
   sourceId: string
   sourceName: string
-  startTime: Date
-  endTime?: Date
+  severity: AnomalySeverity
+  message: string
+  timestamp: number
   duration?: number
-  details: Record<string, any>
-  recordingFilePath?: string
-  createdAt: Date
-  updatedAt: Date
+  resolved: boolean
+  resolvedAt?: number
+  metadata?: Record<string, any>
 }
 
 export interface AlertConfig {

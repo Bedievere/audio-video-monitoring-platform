@@ -4,7 +4,8 @@ import {
   VideoCameraOutlined,
   AlertOutlined,
   SettingOutlined,
-  HistoryOutlined
+  HistoryOutlined,
+  FileOutlined
 } from '@ant-design/icons'
 import { lazy, Suspense, useState } from 'react'
 import { Spin } from 'antd'
@@ -12,6 +13,8 @@ import { Spin } from 'antd'
 const MonitoringPage = lazy(() => import('../monitoring/MonitoringPage'))
 const AudioSourcesPage = lazy(() => import('../monitoring/AudioSourcesPage'))
 const AlertsPage = lazy(() => import('../alerts/AlertsPage'))
+const HistoryPage = lazy(() => import('../history/HistoryPage'))
+const RecordingsPage = lazy(() => import('../history/RecordingsPage'))
 
 const { Header, Content, Sider } = Layout
 
@@ -23,6 +26,7 @@ export default function MainLayout() {
     { key: 'sources', icon: <VideoCameraOutlined />, label: '音视频源管理' },
     { key: 'alerts', icon: <AlertOutlined />, label: '告警管理' },
     { key: 'history', icon: <HistoryOutlined />, label: '历史记录' },
+    { key: 'recordings', icon: <FileOutlined />, label: '录制记录' },
     { key: 'settings', icon: <SettingOutlined />, label: '系统设置' }
   ]
 
@@ -54,6 +58,8 @@ export default function MainLayout() {
             {selectedKey === 'monitoring' && <MonitoringPage />}
             {selectedKey === 'sources' && <AudioSourcesPage />}
             {selectedKey === 'alerts' && <AlertsPage />}
+            {selectedKey === 'history' && <HistoryPage />}
+            {selectedKey === 'recordings' && <RecordingsPage />}
           </Suspense>
         </Content>
       </Layout>
