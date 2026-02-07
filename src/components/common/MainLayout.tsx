@@ -15,6 +15,7 @@ const AudioSourcesPage = lazy(() => import('../monitoring/AudioSourcesPage'))
 const AlertsPage = lazy(() => import('../alerts/AlertsPage'))
 const HistoryPage = lazy(() => import('../history/HistoryPage'))
 const RecordingsPage = lazy(() => import('../history/RecordingsPage'))
+const SettingsPage = lazy(() => import('../settings/SettingsPage'))
 
 const { Header, Content, Sider } = Layout
 
@@ -60,6 +61,7 @@ export default function MainLayout() {
             {selectedKey === 'alerts' && <AlertsPage />}
             {selectedKey === 'history' && <HistoryPage />}
             {selectedKey === 'recordings' && <RecordingsPage />}
+            {selectedKey === 'settings' && <SettingsPage />}
           </Suspense>
         </Content>
       </Layout>
