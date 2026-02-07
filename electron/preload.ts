@@ -19,6 +19,41 @@ contextBridge.exposeInMainWorld('electronAPI', {
     exportToCSV: (anomalies: any[]) => ipcRenderer.invoke('anomalies:exportToCSV', anomalies)
   },
 
+  // 告警通知服务
+  notifications: {
+    getConfig: () => ipcRenderer.invoke('notification:get-config'),
+    updateConfig: (config: any) => ipcRenderer.invoke('notification:update-config', config),
+    sendTest: () => ipcRenderer.invoke('notification:send-test'),
+    clearHistory: () => ipcRenderer.invoke('notification:clear-history'),
+    getQueueStatus: () => ipcRenderer.invoke('notification:get-queue-status')
+  },
+
+  // 异常检测
+  anomaly: {
+    start: () => ipcRenderer.invoke('anomaly:start'),
+    stop: () => ipcRenderer.invoke('anomaly:stop'),
+    registerSource: (params: any) => ipcRenderer.invoke('anomaly:register-source', params),
+    unregisterSource: (params: any) => ipcRenderer.invoke('anomaly:unregister-source', params),
+    processFrame: (params: any) => ipcRenderer.invoke('anomaly:process-frame', params),
+    processBitrate: (params: any) => ipcRenderer.invoke('anomaly:process-bitrate', params),
+    getConfig: () => ipcRenderer.invoke('anomaly:get-config'),
+    updateConfig: (config: any) => ipcRenderer.invoke('anomaly:update-config', config),
+    getStatistics: (sourceId?: string) => ipcRenderer.invoke('anomaly:get-statistics', sourceId),
+    getActiveAnomalies: () => ipcRenderer.invoke('anomaly:get-active-anomalies'),
+    detectAll: () => ipcRenderer.invoke('anomaly:detect-all')
+  },
+
+  // IPC 事件监听
+  ipc: {
+    on: (channel: string, callback: (...args: any[]) => void) => {
+      const listener = (_event: any, ...args: any[]) => callback(...args)
+      ipcRenderer.on(channel, listener)
+    },
+    removeListener: (channel: string, callback: (...args: any[]) => void) => {
+      ipcRenderer.removeListener(channel, callback)
+    }
+  },
+
   // 配置管理
   config: {
     get: () => ipcRenderer.invoke('config:get'),
@@ -29,9 +64,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // 录制管理
   recordings: {
-    getByAnomaly: (anomalyId: string) => ipcRenderer.invoke('recordings:getByAnomaly', anomalyId),
-    download: (recordingId: string) => ipcRenderer.invoke('recordings:download', recordingId),
-    cleanup: () => ipcRenderer.invoke('recordings:cleanup')
+    getConfig: () => ipcRenderer.invoke('recording:get-config'),
+    updateConfig: (config: any) => ipcRenderer.invoke('recording:update-config', config),
+    getAll: () => ipcRenderer.invoke('recording:get-all'),
+    getByAnomaly: (anomalyId: string) => ipcRenderer.invoke('recording:get-by-anomaly', anomalyId),
+    getBySource: (sourceId: string) => ipcRenderer.invoke('recording:get-by-source', sourceId),
+    getStats: () => ipcRenderer.invoke('recording:get-stats'),
+    delete: (recordingId: string) => ipcRenderer.invoke('recording:delete', recordingId),
+    cleanup: () => ipcRenderer.invoke('recording:cleanup')
   },
 
   // 告警服务

@@ -58,6 +58,7 @@ export class HTTPParser extends StreamParser {
       try {
         await this.reader.cancel()
       } catch {
+        // Ignore cancellation errors
       }
       this.reader = undefined
     }
@@ -149,7 +150,11 @@ export class HTTPParser extends StreamParser {
           const reader = segmentResponse.body.getReader()
           const chunks: Uint8Array[] = []
 
-          while (true) {
+          while (!this.isActive) {
+            await new Promise(resolve => setTimeout(resolve, 100))
+          }
+
+          while (this.isActive) {
             const { done, value } = await reader.read()
             if (done) break
             chunks.push(value)

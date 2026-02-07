@@ -284,11 +284,12 @@ export class RTMPParser extends StreamParser {
         }
       }
     } catch {
+      // Ignore parsing errors
     }
     return null
   }
 
-  private decodeAMF(_data: Buffer): any {
+  private decodeAMF(_data: Buffer): unknown {
     return null
   }
 
@@ -307,7 +308,7 @@ export class RTMPParser extends StreamParser {
   }
 
   private extractAppName(url: string): string {
-    const match = url.match(/rtmp[s]?:\/\/[^\/]+\/([^\/]+)/)
+    const match = url.match(new RegExp('rtmps?:\\/\\/[^\\/]+\\/([^\\/]+)'))
     return match ? match[1] : 'live'
   }
 

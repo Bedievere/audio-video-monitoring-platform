@@ -51,26 +51,31 @@ export interface AudioFrame {
 }
 
 export type AnomalyType =
-  | 'black_screen'
-  | 'snow_screen'
-  | 'static_screen'
-  | 'audio_loss'
-  | 'low_volume'
-  | 'high_volume'
-  | 'signal_loss'
+  | 'stream_interrupted'
+  | 'frame_loss'
+  | 'audio_missing'
+  | 'video_black'
+  | 'video_freeze'
+  | 'low_frame_rate'
+  | 'high_bitrate'
+  | 'low_bitrate'
+  | 'connection_failed'
+  | 'timeout'
+
+export type AnomalySeverity = 'low' | 'medium' | 'high' | 'critical'
 
 export interface AnomalyEvent {
   id: string
   type: AnomalyType
   sourceId: string
   sourceName: string
-  startTime: Date
-  endTime?: Date
+  severity: AnomalySeverity
+  message: string
+  timestamp: number
   duration?: number
-  details: Record<string, any>
-  recordingFilePath?: string
-  createdAt: Date
-  updatedAt: Date
+  resolved: boolean
+  resolvedAt?: number
+  metadata?: Record<string, any>
 }
 
 export interface AlertConfig {
@@ -160,6 +165,13 @@ declare global {
         update: (id: string, updates: Partial<AnomalyEvent>) => Promise<void>
         exportToCSV: (anomalies: AnomalyEvent[]) => Promise<string>
       }
+      notifications: {
+        getConfig: () => Promise<any>
+        updateConfig: (config: any) => Promise<any>
+        sendTest: () => Promise<void>
+        clearHistory: () => Promise<void>
+        getQueueStatus: () => Promise<any>
+      }
       config: {
         get: () => Promise<SystemConfig>
         update: (config: Partial<SystemConfig>) => Promise<void>
@@ -167,8 +179,13 @@ declare global {
         load: () => Promise<void>
       }
       recordings: {
-        getByAnomaly: (anomalyId: string) => Promise<RecordingFile[]>
-        download: (recordingId: string) => Promise<Buffer>
+        getConfig: () => Promise<any>
+        updateConfig: (config: any) => Promise<any>
+        getAll: () => Promise<any[]>
+        getByAnomaly: (anomalyId: string) => Promise<any[]>
+        getBySource: (sourceId: string) => Promise<any[]>
+        getStats: () => Promise<any>
+        delete: (recordingId: string) => Promise<void>
         cleanup: () => Promise<void>
       }
       alerts: {
@@ -178,6 +195,23 @@ declare global {
         start: (sourceId: string) => Promise<void>
         stop: (sourceId: string) => Promise<void>
         getStatus: (sourceId: string) => Promise<any>
+      }
+      anomaly: {
+        start: () => Promise<void>
+        stop: () => Promise<void>
+        registerSource: (params: { sourceId: string; sourceName: string }) => Promise<void>
+        unregisterSource: (params: { sourceId: string }) => Promise<void>
+        processFrame: (params: { sourceId: string; frame: any }) => Promise<void>
+        processBitrate: (params: { sourceId: string; bitrate: number }) => Promise<void>
+        getConfig: () => Promise<any>
+        updateConfig: (config: any) => Promise<any>
+        getStatistics: (sourceId?: string) => Promise<any>
+        getActiveAnomalies: () => Promise<any[]>
+        detectAll: () => Promise<any>
+      }
+      ipc: {
+        on: (channel: string, callback: (...args: any[]) => void) => void
+        removeListener: (channel: string, callback: (...args: any[]) => void) => void
       }
       stream: {
         onFrame: (callback: (data: { sourceId: string; frame: StreamFrame }) => void) => () => void

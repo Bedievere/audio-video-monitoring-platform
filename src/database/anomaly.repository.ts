@@ -20,27 +20,23 @@ export class AnomalyRepository {
       conditions.push('source_id = ?')
       params.push(filters.sourceId)
     }
-
     if (filters?.type) {
       conditions.push('type = ?')
       params.push(filters.type)
     }
-
     if (filters?.startDate) {
-      conditions.push('start_time >= ?')
-      params.push(filters.startDate.toISOString())
+      conditions.push('timestamp >= ?')
+      params.push(filters.startDate.getTime())
     }
-
     if (filters?.endDate) {
-      conditions.push('start_time <= ?')
-      params.push(filters.endDate.toISOString())
+      conditions.push('timestamp <= ?')
+      params.push(filters.endDate.getTime())
     }
 
     if (conditions.length > 0) {
       query += ' WHERE ' + conditions.join(' AND ')
     }
-
-    query += ' ORDER BY start_time DESC'
+    query += ' ORDER BY timestamp DESC'
 
     const stmt = db.prepare(query)
     const rows = stmt.all(...params) as any[]
@@ -54,50 +50,40 @@ export class AnomalyRepository {
   }
 
   async create(anomaly: Partial<AnomalyEvent>): Promise<void> {
-    const now = new Date().toISOString()
+    const now = Date.now()
     const stmt = db.prepare(`
-      INSERT INTO anomaly_records (id, source_id, source_name, type, start_time, end_time, duration, recording_file_path, details, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO anomaly_records (id, source_id, source_name, type, timestamp, resolved, resolved_at, duration, metadata)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
-    const startTime = anomaly.startTime || new Date()
     stmt.run(
       anomaly.id,
       anomaly.sourceId,
       anomaly.sourceName,
       anomaly.type,
-      startTime.toISOString(),
-      anomaly.endTime?.toISOString() || null,
+      anomaly.timestamp || now,
+      anomaly.resolved ? 1 : 0,
+      anomaly.resolved ? anomaly.resolvedAt : null,
       anomaly.duration || null,
-      anomaly.recordingFilePath || null,
-      JSON.stringify(anomaly.details || {}),
-      now,
-      now
+      JSON.stringify(anomaly.metadata || {})
     )
   }
 
   async update(id: string, updates: Partial<AnomalyEvent>): Promise<void> {
-    const now = new Date().toISOString()
+    const now = Date.now()
     const fields: string[] = []
     const params: any[] = []
 
-    if (updates.endTime !== undefined) {
-      fields.push('end_time = ?')
-      params.push(updates.endTime.toISOString())
+    if (updates.resolved !== undefined) {
+      fields.push('resolved = ?')
+      params.push(updates.resolved ? 1 : 0)
     }
-
+    if (updates.resolvedAt !== undefined) {
+      fields.push('resolved_at = ?')
+      params.push(updates.resolvedAt)
+    }
     if (updates.duration !== undefined) {
       fields.push('duration = ?')
       params.push(updates.duration)
-    }
-
-    if (updates.recordingFilePath !== undefined) {
-      fields.push('recording_file_path = ?')
-      params.push(updates.recordingFilePath)
-    }
-
-    if (updates.details !== undefined) {
-      fields.push('details = ?')
-      params.push(JSON.stringify(updates.details))
     }
 
     if (fields.length > 0) {
@@ -122,14 +108,43 @@ export class AnomalyRepository {
       sourceId: row.source_id,
       sourceName: row.source_name,
       type: row.type,
-      startTime: new Date(row.start_time),
-      endTime: row.end_time ? new Date(row.end_time) : undefined,
+      severity: this.inferSeverity(row.type),
+      message: this.inferMessage(row),
+      timestamp: row.timestamp,
       duration: row.duration,
-      recordingFilePath: row.recording_file_path,
-      details: row.details ? JSON.parse(row.details) : {},
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at)
+      resolved: row.resolved === 1,
+      resolvedAt: row.resolved_at || undefined,
+      metadata: row.metadata ? JSON.parse(row.metadata) : {}
     }
+  }
+
+  private inferSeverity(type: string): 'low' | 'medium' | 'high' | 'critical' {
+    if (['video_black', 'video_freeze', 'audio_missing', 'low_frame_rate'].includes(type)) {
+      return 'high'
+    }
+    if (['stream_interrupted', 'low_bitrate', 'high_bitrate', 'frame_loss'].includes(type)) {
+      return 'low'
+    }
+    if (['connection_failed', 'timeout'].includes(type)) {
+      return 'critical'
+    }
+    return 'medium'
+  }
+
+  private inferMessage(type: string): string {
+    const messages: Record<string, string> = {
+      stream_interrupted: '流中断',
+      frame_loss: '检测到丢帧',
+      audio_missing: '检测到音频静音',
+      video_black: '检测到画面黑屏',
+      video_freeze: '检测到画面冻结',
+      low_frame_rate: '帧率过低',
+      high_bitrate: '码率过高',
+      low_bitrate: '码率过低',
+      connection_failed: '连接失败',
+      timeout: '连接超时'
+    }
+    return messages[type] || `${type} - 检测到异常`
   }
 }
 
