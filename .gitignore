@@ -37,6 +37,11 @@
 **/.fuse_hidden*
 **/.nfs*
 
+# Build outputs
+**/dist/
+**/dist-electron/
+**/release/
+
 # Node.js
 **/node_modules/
 **/npm-debug.log*
