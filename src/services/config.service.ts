@@ -113,6 +113,8 @@ export class ConfigManager {
     } catch (error) {
       console.error('加载配置失败:', error)
       this.config = { ...DEFAULT_CONFIG }
+      this.save()
+      console.log('配置文件已被重建:', CONFIG_FILE)
     }
     this.loaded = true
     return this.config
