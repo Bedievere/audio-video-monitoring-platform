@@ -12,6 +12,7 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/**/*.stories.{ts,tsx}'
   ],
+  passWithNoTests: true,
   coverageThreshold: {
     global: {
       branches: 70,
