@@ -96,23 +96,24 @@ const DEFAULT_CONFIG: ConfigData = {
 }
 
 export class ConfigManager {
-  private config: ConfigData = DEFAULT_CONFIG
+  private config: ConfigData = deepClone(DEFAULT_CONFIG)
   private loaded = false
 
   load(): ConfigData {
     try {
       if (fs.existsSync(CONFIG_FILE)) {
         const data = fs.readFileSync(CONFIG_FILE, 'utf-8')
-        this.config = { ...DEFAULT_CONFIG, ...JSON.parse(data) }
+        const parsed = JSON.parse(data) as Partial<ConfigData>
+        this.config = this.deepMerge(deepClone(DEFAULT_CONFIG), parsed)
         console.log('配置已从文件加载:', CONFIG_FILE)
       } else {
         console.log('配置文件不存在，使用默认配置')
-        this.config = { ...DEFAULT_CONFIG }
+        this.config = deepClone(DEFAULT_CONFIG)
         this.save()
       }
     } catch (error) {
       console.error('加载配置失败:', error)
-      this.config = { ...DEFAULT_CONFIG }
+      this.config = deepClone(DEFAULT_CONFIG)
     }
     this.loaded = true
     return this.config
@@ -146,12 +147,12 @@ export class ConfigManager {
   }
 
   reset(): void {
-    this.config = { ...DEFAULT_CONFIG }
+    this.config = deepClone(DEFAULT_CONFIG)
     this.save()
   }
 
   private deepMerge<T>(target: T, source: Partial<T>): T {
-    const result = { ...target } as any
+    const result = deepClone(target) as any
 
     for (const key in source) {
       if (source[key] !== undefined) {
@@ -169,6 +170,13 @@ export class ConfigManager {
 
     return result
   }
+}
+
+const deepClone = <T>(value: T): T => {
+  if (typeof structuredClone === 'function') {
+    return structuredClone(value)
+  }
+  return JSON.parse(JSON.stringify(value)) as T
 }
 
 export const configManager = new ConfigManager()
